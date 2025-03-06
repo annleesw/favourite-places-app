@@ -1,16 +1,37 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AddPlaceScreen extends StatefulWidget{
+import 'package:favourite_places_app/provider/user_places_provider.dart';
+import 'package:favourite_places_app/widget/image_input.dart';
+import 'package:favourite_places_app/model/places_model.dart';
+import 'package:favourite_places_app/widget/location_input.dart';
+
+class AddPlaceScreen extends ConsumerStatefulWidget{
   const AddPlaceScreen({super.key});
 
   @override
-  State<AddPlaceScreen> createState() {
+  ConsumerState<AddPlaceScreen> createState() {
     return _AddPlaceScreenState();
   }
 }
 
-class _AddPlaceScreenState extends State<AddPlaceScreen>{
+class _AddPlaceScreenState extends ConsumerState<AddPlaceScreen>{
   final _titleController = TextEditingController();
+  File ? _selectedImage;
+  PlaceLocation? _selectedLocation;
+
+  void _savePlace() {
+    final enteredText = _titleController.text; //output cannot be null 
+    if (enteredText.isEmpty || _selectedImage == null || _selectedLocation == null) {
+      return;
+    }
+    ref
+      .read(userPlacesProvider.notifier)
+      .addPlace(enteredText, _selectedImage!, _selectedLocation!); //add place
+    
+    Navigator.of(context).pop(); //close the screen
+  }
 
   @override
   void dispose() {
@@ -33,10 +54,25 @@ class _AddPlaceScreenState extends State<AddPlaceScreen>{
               decoration: const InputDecoration(
                 labelText: 'Title',
               ),
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 10),
+            ImageInput(
+              onPickImage: (image) {
+                _selectedImage = image;
+              },
+            ), 
+            const SizedBox(height: 10),
+            LocationInput(
+              onSelectLocation: (location) {
+                _selectedLocation = location;
+              }
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: _savePlace,
               label: const Text('Add Place'),
               icon: const Icon(Icons.add),
             ),
